@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import '../theme/colors.dart';
 
 class CustomCheckbox extends StatelessWidget {
   final bool value;
@@ -33,7 +32,7 @@ class CustomCheckbox extends StatelessWidget {
               ),
             ),
             child: value
-                ? Icon(
+                ? const Icon(
                     Iconsax.tick_square,
                     size: 12,
                     color: Colors.white,

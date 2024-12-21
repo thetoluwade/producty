@@ -26,8 +26,8 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
 
   final List<Map<String, String>> _introSlides = [
     {
-      'title': 'Welcome to Producty',
-      'description': 'Your Personal Task Manager and Productivity Companion',
+      'title': 'Stay Organized, Achieve More',
+      'description': 'Unlock Your Full Potential with Ease',
       'image': 'assets/images/intro1.svg',
     },
     {
@@ -83,41 +83,43 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   Widget _buildIntroSlide(Map<String, String> slide) {
     final screenHeight = MediaQuery.of(context).size.height;
     
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(height: screenHeight * 0.05),
-        SvgPicture.asset(
-          slide['image']!,
-          height: screenHeight * 0.35,
-          fit: BoxFit.contain,
-        ),
-        SizedBox(height: screenHeight * 0.01),
-        Text(
-          slide['title']!,
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF1A1A1A),
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(height: screenHeight * 0.03),
+          SvgPicture.asset(
+            slide['image']!,
+            height: screenHeight * 0.3,
+            fit: BoxFit.contain,
           ),
-          textAlign: TextAlign.center,
-        ),
-        SizedBox(height: screenHeight * 0.005),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Text(
-            slide['description']!,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              fontSize: 16,
-              color: Colors.grey[600],
+          const SizedBox(height: 16),
+          Text(
+            slide['title']!,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF1A1A1A),
             ),
             textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
-        ),
-      ],
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Text(
+              slide['description']!,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                fontSize: 16,
+                color: Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -248,6 +250,40 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFF1F1F1),
+        elevation: 0,
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 20, top: 8),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(context, '/support');
+              },
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Iconsax.headphone,
+                  size: 20,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -264,36 +300,6 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                         onPageChanged: _onPageChanged,
                         itemCount: _introSlides.length,
                         itemBuilder: (context, index) => _buildIntroSlide(_introSlides[index]),
-                      ),
-                    ),
-                    // Support Icon Button
-                    Positioned(
-                      top: 10,
-                      left: 0,
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.pushNamed(context, '/support');
-                        },
-                        child: Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Iconsax.headphone,
-                            size: 20,
-                            color: Colors.black,
-                          ),
-                        ),
                       ),
                     ),
                     Positioned(
