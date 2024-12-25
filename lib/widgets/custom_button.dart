@@ -1,55 +1,61 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/colors.dart';
 
 class CustomButton extends StatelessWidget {
-  final String text;
   final VoidCallback onPressed;
+  final String text;
   final bool isLoading;
-  final bool isOutlined;
+  final Color? color;
+  final Color? labelColor;
+  final double? width;
+  final double? height;
 
   const CustomButton({
     super.key,
-    required this.text,
     required this.onPressed,
+    required this.text,
     this.isLoading = false,
-    this.isOutlined = false,
+    this.color,
+    this.labelColor,
+    this.width,
+    this.height,
   });
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final buttonColor = color ?? (isDark ? AppColors.darkPrimary : AppColors.primary);
+    final textColor = labelColor ?? (isDark ? AppColors.darkText : AppColors.white);
 
     return SizedBox(
-      width: double.infinity,
-      height: 56,
+      width: width ?? double.infinity,
+      height: height ?? 56,
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: isOutlined ? Colors.white : AppColors.primary,
-          foregroundColor: isOutlined ? AppColors.primary : Colors.white,
-          elevation: 0,
+          backgroundColor: buttonColor,
+          foregroundColor: textColor,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: isOutlined
-                ? BorderSide(color: AppColors.primary)
-                : BorderSide.none,
+            borderRadius: BorderRadius.circular(12),
           ),
+          elevation: 0,
         ),
         child: isLoading
-            ? const SizedBox(
+            ? SizedBox(
                 width: 24,
                 height: 24,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(textColor),
                 ),
               )
             : Text(
                 text,
-                style: textTheme.titleMedium?.copyWith(
+                style: GoogleFonts.dmSans(
                   fontSize: 16,
+                  color: textColor,
                   fontWeight: FontWeight.w600,
-                  color: isOutlined ? AppColors.primary : Colors.white,
                 ),
               ),
       ),

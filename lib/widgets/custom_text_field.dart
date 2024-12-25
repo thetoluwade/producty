@@ -1,90 +1,102 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../theme/colors.dart';
 
 class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
-  final String labelText;
-  final IconData prefixIcon;
-  final int? maxLines;
+  final String placeholder;
+  final String? error;
   final TextInputType? keyboardType;
-  final String? Function(String?)? validator;
+  final Function(String)? onChanged;
+  final IconData? icon;
+  final int? maxLines;
+  final VoidCallback? onTap;
+  final FocusNode? focusNode;
   final Color? fillColor;
+  final Color? textColor;
+  final bool obscureText;
 
   const CustomTextField({
     super.key,
     required this.controller,
-    required this.labelText,
-    required this.prefixIcon,
+    required this.placeholder,
+    this.error,
+    this.keyboardType = TextInputType.text,
+    this.onChanged,
+    this.icon,
     this.maxLines = 1,
-    this.keyboardType,
-    this.validator,
+    this.onTap,
+    this.focusNode,
     this.fillColor,
+    this.textColor,
+    this.obscureText = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final defaultFillColor = isDark ? AppColors.darkGrey : AppColors.white;
+    final defaultTextColor = isDark ? AppColors.darkText : AppColors.text;
 
-    return Stack(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (maxLines! > 1)
-          Positioned(
-            top: 20,
-            left: 16,
-            child: Icon(
-              prefixIcon,
-              color: Colors.grey[600],
-              size: 20,
-            ),
+        Container(
+          decoration: BoxDecoration(
+            color: fillColor ?? defaultFillColor,
+            borderRadius: BorderRadius.circular(12),
+            border: error != null
+                ? Border.all(
+                    color: isDark ? AppColors.darkError : AppColors.error,
+                    width: 1,
+                  )
+                : null,
           ),
-        TextFormField(
-          controller: controller,
-          style: textTheme.bodyLarge?.copyWith(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xFF1A1A1A),
-          ),
-          decoration: InputDecoration(
-            hintText: labelText,
-            hintStyle: textTheme.bodyLarge?.copyWith(
-              color: Colors.grey[400],
+          child: TextField(
+            controller: controller,
+            focusNode: focusNode,
+            keyboardType: keyboardType,
+            obscureText: obscureText,
+            maxLines: maxLines,
+            onTap: onTap,
+            onChanged: onChanged,
+            style: GoogleFonts.dmSans(
               fontSize: 16,
-              fontWeight: FontWeight.normal,
+              color: textColor ?? defaultTextColor,
             ),
-            prefixIcon: maxLines! > 1
-                ? null
-                : Icon(
-                    prefixIcon,
-                    color: Colors.grey[600],
-                    size: 20,
-                  ),
-            filled: true,
-            fillColor: fillColor ?? const Color(0xFFF3F3F3),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide.none,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(
-                color: Color(0xFFDEDEDE),
-                width: 1.5,
+            decoration: InputDecoration(
+              hintText: placeholder,
+              hintStyle: GoogleFonts.dmSans(
+                fontSize: 16,
+                color: (textColor ?? defaultTextColor).withOpacity(0.5),
+              ),
+              prefixIcon: icon != null
+                  ? Icon(
+                      icon,
+                      color: error != null
+                          ? (isDark ? AppColors.darkError : AppColors.error)
+                          : (textColor ?? defaultTextColor).withOpacity(0.5),
+                    )
+                  : null,
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
               ),
             ),
-            contentPadding: EdgeInsets.only(
-              left: maxLines! > 1 ? 48 : 16,
-              right: 16,
-              top: maxLines! > 1 ? 20 : 0,
-              bottom: maxLines! > 1 ? 20 : 0,
+          ),
+        ),
+        if (error != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            error!,
+            style: GoogleFonts.dmSans(
+              fontSize: 14,
+              color: isDark ? AppColors.darkError : AppColors.error,
             ),
           ),
-          maxLines: maxLines,
-          keyboardType: keyboardType,
-          validator: validator,
-        ),
+        ],
       ],
     );
   }

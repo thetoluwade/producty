@@ -7,6 +7,7 @@ import '../../data/models/todo.dart';
 import '../../providers/todo_provider.dart';
 import '../auth/auth_screen.dart';
 import 'package:uuid/uuid.dart';
+import '../../widgets/custom_toast.dart';
 
 class TodoListScreen extends StatefulWidget {
   const TodoListScreen({super.key});
@@ -19,10 +20,20 @@ class _TodoListScreenState extends State<TodoListScreen> {
   final _todoController = TextEditingController();
   String _selectedTab = 'all';
 
-  @override
-  void dispose() {
-    _todoController.dispose();
-    super.dispose();
+  void _showToast(String message, {bool isError = false}) {
+    CustomToast.show(context, message, isError: isError);
+  }
+
+  void _handleLogout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('onboarding_complete', false);
+    if (!mounted) return;
+    _showToast('Successfully logged out');
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const AuthScreen()),
+      (route) => false,
+    );
   }
 
   void _addTodo() {
@@ -40,27 +51,30 @@ class _TodoListScreenState extends State<TodoListScreen> {
   }
 
   @override
+  void dispose() {
+    _todoController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F1F1),
       appBar: AppBar(
         backgroundColor: const Color(0xFFF1F1F1),
         elevation: 0,
-        title: const Text('Producty'),
+        title: Text(
+          'Producty',
+          style: theme.textTheme.headlineMedium,
+        ),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Iconsax.logout),
-            onPressed: () async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setBool('onboarding_complete', false);
-              if (!mounted) return;
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const AuthScreen()),
-                (route) => false,
-              );
-            },
+            icon: Icon(
+              Iconsax.logout,
+              color: theme.colorScheme.onSurface,
+            ),
+            onPressed: _handleLogout,
             tooltip: 'Logout',
           ),
         ],
@@ -130,7 +144,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
             isScrollControlled: true,
           );
         },
-        child: const Icon(Icons.add),
+        child: const Icon(Iconsax.add),
       ),
     );
   }

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import '../../theme/colors.dart';
+import '../../utils/haptics.dart';
 import '../../widgets/custom_text_field.dart';
-import '../../widgets/custom_dropdown_field.dart';
 import '../../widgets/custom_button.dart';
+import '../../widgets/custom_toast.dart';
+import '../../widgets/custom_bottom_sheet.dart';
 
 class SupportScreen extends StatefulWidget {
   const SupportScreen({super.key});
@@ -13,15 +14,13 @@ class SupportScreen extends StatefulWidget {
 }
 
 class _SupportScreenState extends State<SupportScreen> {
-  final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  String _inquiryType = 'Password Reset';
   final _messageController = TextEditingController();
+  String _selectedIssue = 'Technical Support';
   bool _isLoading = false;
 
-  final List<String> _inquiryTypes = [
-    'Password Reset',
+  final List<String> _issueTypes = [
     'Account Recovery',
     'Technical Support',
     'Feature Request',
@@ -36,218 +35,155 @@ class _SupportScreenState extends State<SupportScreen> {
     super.dispose();
   }
 
-  void _showInquiryTypePicker() {
+  void _showToast(String message, {bool isError = false}) {
+    if (isError) {
+      Haptics.error();
+    }
+    CustomToast.show(context, message, isError: isError);
+  }
+
+  void _showIssueTypePicker() {
+    Haptics.mediumImpact();
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) => Padding(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-        child: Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFFFFF),
-            borderRadius: BorderRadius.circular(35),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF000000).withOpacity(0.02),
-                offset: const Offset(0, 0),
-                blurRadius: 10,
-                spreadRadius: 2,
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                margin: const EdgeInsets.only(top: 8),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
+        child: CustomBottomSheet(
+          title: 'Select Issue Type',
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: _issueTypes.length,
+            itemBuilder: (context, index) {
+              final issueType = _issueTypes[index];
+              final theme = Theme.of(context);
+              final isSelected = issueType == _selectedIssue;
+              
+              return ListTile(
+                title: Text(
+                  issueType,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface,
+                    fontWeight: isSelected ? FontWeight.w500 : null,
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Select Inquiry Type',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    ...List.generate(
-                      _inquiryTypes.length,
-                      (index) => InkWell(
-                        onTap: () {
-                          setState(() {
-                            _inquiryType = _inquiryTypes[index];
-                          });
-                          Navigator.pop(context);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: Row(
-                            children: [
-                              Icon(
-                                _inquiryType == _inquiryTypes[index]
-                                    ? Iconsax.tick_circle
-                                    : Iconsax.box,
-                                color: _inquiryType == _inquiryTypes[index]
-                                    ? Theme.of(context).primaryColor
-                                    : Colors.grey,
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                _inquiryTypes[index],
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.black,
-                                  fontWeight: _inquiryType == _inquiryTypes[index]
-                                      ? FontWeight.w500
-                                      : FontWeight.normal,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                leading: Icon(
+                  isSelected ? Iconsax.tick_circle : Iconsax.box,
+                  color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
                 ),
-              ),
-            ],
+                onTap: () {
+                  setState(() {
+                    _selectedIssue = issueType;
+                  });
+                  Navigator.pop(context);
+                },
+              );
+            },
           ),
         ),
       ),
     );
   }
 
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Support request submitted successfully!'),
-          margin: EdgeInsets.all(20),
-        ),
-      );
-      Navigator.pop(context);
-      setState(() {
-        _isLoading = false;
-      });
+  Future<void> _handleSubmit() async {
+    if (_nameController.text.isEmpty ||
+        _emailController.text.isEmpty ||
+        _messageController.text.isEmpty) {
+      _showToast('Please fill in all fields', isError: true);
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Simulate API call
+      await Future.delayed(const Duration(seconds: 2));
+      _showToast('Support ticket submitted successfully');
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      _showToast('Failed to submit support ticket', isError: true);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.colorScheme.surfaceContainerHighest,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
+        backgroundColor: theme.colorScheme.surface,
         title: Text(
-          'Contact Support',
-          style: textTheme.headlineMedium?.copyWith(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF1A1A1A),
-          ),
+          'Support',
+          style: theme.textTheme.headlineMedium,
         ),
-        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left),
+          icon: Icon(
+            Iconsax.arrow_left,
+            color: theme.colorScheme.onSurface,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Icon(
-                Iconsax.support,
-                size: 64,
-                color: Colors.black,
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'How can we help you?',
-                style: textTheme.bodyLarge?.copyWith(
-                  color: Colors.grey[600],
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 32),
-              CustomTextField(
-                controller: _nameController,
-                labelText: 'Full Name',
-                prefixIcon: Iconsax.user,
-                fillColor: Colors.white,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                controller: _emailController,
-                labelText: 'Email Address',
-                prefixIcon: Iconsax.sms,
-                fillColor: Colors.white,
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
-                  }
-                  if (!value.contains('@')) {
-                    return 'Please enter a valid email';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              CustomDropdownField(
-                value: _inquiryType,
-                labelText: 'Type of Inquiry',
-                prefixIcon: Iconsax.message_question,
-                onTap: _showInquiryTypePicker,
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                controller: _messageController,
-                labelText: 'Message',
-                prefixIcon: Iconsax.message,
-                fillColor: Colors.white,
-                maxLines: 5,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your message';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 32),
-              CustomButton(
-                text: 'Send Message',
-                onPressed: _submitForm,
-                isLoading: _isLoading,
-              ),
-            ],
-          ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'How can we help?',
+              style: theme.textTheme.displaySmall,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Choose a category below or search for your issue',
+              style: theme.textTheme.bodyLarge,
+            ),
+            const SizedBox(height: 24),
+            CustomTextField(
+              controller: _nameController,
+              placeholder: 'Enter your full name',
+              icon: Iconsax.user_edit,
+            ),
+            const SizedBox(height: 16),
+            CustomTextField(
+              controller: _emailController,
+              placeholder: 'Enter your email address',
+              icon: Iconsax.sms_edit,
+              keyboardType: TextInputType.emailAddress,
+            ),
+            const SizedBox(height: 16),
+            CustomTextField(
+              controller: TextEditingController(text: _selectedIssue),
+              placeholder: 'Select Type of Inquiry',
+              icon: Iconsax.message_question,
+              onTap: _showIssueTypePicker,
+            ),
+            const SizedBox(height: 16),
+            CustomTextField(
+              controller: _messageController,
+              placeholder: 'Describe your issue in detail...',
+              icon: Iconsax.message_edit,
+              maxLines: 5,
+            ),
+            const SizedBox(height: 20),
+            CustomButton(
+              onPressed: _handleSubmit,
+              text: 'Send Message',
+              isLoading: _isLoading,
+            ),
+          ],
         ),
       ),
     );
