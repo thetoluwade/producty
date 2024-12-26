@@ -7,7 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/custom_button.dart';
-import '../../widgets/custom_checkbox.dart';
 import '../../widgets/custom_toast.dart';
 
 class AuthScreen extends StatefulWidget {

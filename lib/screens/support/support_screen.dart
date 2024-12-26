@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 import '../../utils/haptics.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/custom_button.dart';
