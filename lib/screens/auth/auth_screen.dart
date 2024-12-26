@@ -246,7 +246,7 @@ class _AuthScreenState extends State<AuthScreen>
             fontSize: 16,
             fontWeight: FontWeight.w500,
             color: theme.brightness == Brightness.dark
-                ? Colors.white
+                ? const Color(0xFF99999F)
                 : const Color(0xFF3D3D3D),
           ),
         ),
@@ -278,7 +278,12 @@ class _AuthScreenState extends State<AuthScreen>
                     _rememberMe = value ?? false;
                   });
                 },
-                activeColor: const Color(0xFF3D3D3D),
+                activeColor: theme.brightness == Brightness.dark
+                    ? const Color(0xFFFFFFFF)
+                    : const Color(0xFF3D3D3D),
+                checkColor: theme.brightness == Brightness.dark
+                    ? const Color(0xFF3D3D3D)
+                    : const Color(0xFFFFFFFF),
                 side: BorderSide(
                   color: theme.brightness == Brightness.dark
                       ? const Color(0xFFFFFFFF)
@@ -341,17 +346,21 @@ class _AuthScreenState extends State<AuthScreen>
               width: 115,
               height: 44,
               decoration: BoxDecoration(
-                color: const Color(0xFFF3F3F3),
+                color: theme.brightness == Brightness.dark
+                    ? const Color(0xFF3D3D3D)
+                    : const Color(0xFFF3F3F3),
                 borderRadius: BorderRadius.circular(15),
               ),
               child: IconButton(
                 onPressed: () {
                   // Handle Google sign in
                 },
-                icon: const FaIcon(
+                icon: FaIcon(
                   FontAwesomeIcons.google,
                   size: 24,
-                  color: Color(0xFF3D3D3D),
+                  color: theme.brightness == Brightness.dark
+                      ? const Color(0xFFFFFFFF)
+                      : const Color(0xFF3D3D3D),
                 ),
               ),
             ),
@@ -360,17 +369,21 @@ class _AuthScreenState extends State<AuthScreen>
               width: 115,
               height: 44,
               decoration: BoxDecoration(
-                color: const Color(0xFFF3F3F3),
+                color: theme.brightness == Brightness.dark
+                    ? const Color(0xFF3D3D3D)
+                    : const Color(0xFFF3F3F3),
                 borderRadius: BorderRadius.circular(15),
               ),
               child: IconButton(
                 onPressed: () {
                   // Handle Facebook sign in
                 },
-                icon: const FaIcon(
+                icon: FaIcon(
                   FontAwesomeIcons.facebook,
                   size: 24,
-                  color: Color(0xFF3D3D3D),
+                  color: theme.brightness == Brightness.dark
+                      ? const Color(0xFFFFFFFF)
+                      : const Color(0xFF3D3D3D),
                 ),
               ),
             ),

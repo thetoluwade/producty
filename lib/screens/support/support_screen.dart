@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../utils/haptics.dart';
 import '../../widgets/custom_text_field.dart';
@@ -269,14 +270,16 @@ class _SupportScreenState extends State<SupportScreen> {
             Container(
               decoration: BoxDecoration(
                 color: theme.brightness == Brightness.dark
-                    ? const Color(0xFF28282A)
+                    ? const Color(0xFF1C1C1E)
                     : const Color(0xFFF3F3F3),
                 borderRadius: BorderRadius.circular(15),
                 border: _issueError != null
                     ? Border.all(color: Colors.red, width: 1)
                     : _isIssueTypeFocused
                         ? Border.all(
-                            color: const Color(0xFFDEDEDE),
+                            color: theme.brightness == Brightness.dark
+                                ? const Color(0xFF3D3D3D)
+                                : const Color(0xFFDEDEDE),
                             width: 1,
                           )
                         : null,
@@ -289,7 +292,9 @@ class _SupportScreenState extends State<SupportScreen> {
                     prefixIcon: Icon(
                       Iconsax.message_question,
                       color: theme.brightness == Brightness.dark
-                          ? const Color(0xFFFFFFFF)
+                          ? (_isIssueTypeFocused 
+                              ? const Color(0xFFFFFFFF)
+                              : const Color(0xFF7B7B80))
                           : const Color(0xFF3D3D3D),
                     ),
                     border: InputBorder.none,
@@ -298,7 +303,7 @@ class _SupportScreenState extends State<SupportScreen> {
                     labelText: 'Type of Inquiry',
                     labelStyle: GoogleFonts.dmSans(
                       color: theme.brightness == Brightness.dark
-                          ? const Color(0xFFFFFFFF)
+                          ? const Color(0xFF99999F)
                           : const Color(0xFF3D3D3D),
                       fontSize: 16,
                     ),
@@ -317,11 +322,13 @@ class _SupportScreenState extends State<SupportScreen> {
                           fontSize: 16,
                         ),
                       ),
-                      Icon(
-                        Iconsax.arrow_down_1,
-                        size: 20,
+                      FaIcon(
+                        FontAwesomeIcons.chevronDown,
+                        size: 16,
                         color: theme.brightness == Brightness.dark
-                            ? const Color(0xFFFFFFFF)
+                            ? (_isIssueTypeFocused 
+                                ? const Color(0xFFFFFFFF)
+                                : const Color(0xFF7B7B80))
                             : const Color(0xFF3D3D3D),
                       ),
                     ],

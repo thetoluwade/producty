@@ -66,8 +66,11 @@ class _CustomTextFieldState extends State<CustomTextField> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final defaultFillColor = isDark ? AppColors.darkGrey : const Color(0xFFF3F3F3);
+    final defaultFillColor = isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF3F3F3);
     final defaultTextColor = isDark ? AppColors.darkText : AppColors.text;
+    final defaultIconColor = isDark 
+        ? (_isFocused ? const Color(0xFFFFFFFF) : const Color(0xFF7B7B80))
+        : AppColors.text.withOpacity(_isFocused ? 1 : 0.5);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,7 +86,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
                   )
                 : _isFocused
                     ? Border.all(
-                        color: const Color(0xFFDEDEDE),
+                        color: isDark 
+                            ? const Color(0xFF3D3D3D)
+                            : const Color(0xFFDEDEDE),
                         width: 1,
                       )
                     : null,
@@ -104,14 +109,16 @@ class _CustomTextFieldState extends State<CustomTextField> {
               hintText: widget.placeholder,
               hintStyle: GoogleFonts.dmSans(
                 fontSize: 16,
-                color: (widget.textColor ?? defaultTextColor).withOpacity(0.5),
+                color: isDark
+                    ? const Color(0xFF7B7B80)
+                    : (widget.textColor ?? defaultTextColor).withOpacity(0.5),
               ),
               prefixIcon: widget.icon != null
                   ? Icon(
                       widget.icon,
                       color: widget.error != null
                           ? (isDark ? AppColors.darkError : AppColors.error)
-                          : (widget.textColor ?? defaultTextColor).withOpacity(0.5),
+                          : defaultIconColor,
                     )
                   : null,
               border: InputBorder.none,
