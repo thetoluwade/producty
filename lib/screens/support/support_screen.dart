@@ -25,6 +25,7 @@ class _SupportScreenState extends State<SupportScreen> {
   String? _emailError;
   String? _messageError;
   String? _issueError;
+  bool _isIssueTypeFocused = false;
 
   final List<String> _issueTypes = [
     'Account Recovery',
@@ -39,6 +40,13 @@ class _SupportScreenState extends State<SupportScreen> {
 
   void _showToast(String message, {bool isError = false}) {
     CustomToast.show(context, message, isError: isError);
+  }
+
+  void _handleIssueTypeTap() {
+    setState(() {
+      _isIssueTypeFocused = true;
+    });
+    _showIssueTypePicker();
   }
 
   void _showIssueTypePicker() {
@@ -68,7 +76,7 @@ class _SupportScreenState extends State<SupportScreen> {
               style: GoogleFonts.dmSans(
                 fontSize: 16,
                 color: isSelected
-                    ? theme.colorScheme.primary
+                    ? const Color(0xFF00BA88)
                     : theme.brightness == Brightness.dark
                         ? const Color(0xFFFFFFFF)
                         : const Color(0xFF3D3D3D),
@@ -78,7 +86,7 @@ class _SupportScreenState extends State<SupportScreen> {
             leading: Icon(
               isSelected ? Iconsax.tick_circle : Iconsax.box,
               color: isSelected
-                  ? theme.colorScheme.primary
+                  ? const Color(0xFF00BA88)
                   : theme.brightness == Brightness.dark
                       ? const Color(0xFFFFFFFF)
                       : const Color(0xFF3D3D3D),
@@ -87,6 +95,7 @@ class _SupportScreenState extends State<SupportScreen> {
               setState(() {
                 _selectedIssue = issueType;
                 _issueError = null;
+                _isIssueTypeFocused = false;
               });
               Navigator.pop(context);
             },
@@ -97,52 +106,55 @@ class _SupportScreenState extends State<SupportScreen> {
   }
 
   Future<void> _handleSubmit() async {
-    // Clear previous errors
+    // Dismiss keyboard
+    FocusScope.of(context).unfocus();
+
     setState(() {
-      _nameError = null;
-      _emailError = null;
-      _messageError = null;
-      _issueError = null;
+      _isLoading = true;
     });
 
-    if (_selectedIssue == null) {
-      setState(() {
-        _issueError = 'Please select an issue type';
-      });
-      return;
-    }
+    // Validate fields
+    bool hasError = false;
 
     if (_nameController.text.isEmpty) {
       setState(() {
         _nameError = 'Please enter your name';
       });
-      return;
+      hasError = true;
     }
 
     if (_emailController.text.isEmpty) {
       setState(() {
         _emailError = 'Please enter your email';
       });
-      return;
-    }
-
-    if (!_isValidEmail(_emailController.text)) {
+      hasError = true;
+    } else if (!_isValidEmail(_emailController.text)) {
       setState(() {
         _emailError = 'Please enter a valid email';
       });
-      return;
+      hasError = true;
+    }
+
+    if (_selectedIssue == null) {
+      setState(() {
+        _issueError = 'Please select an issue type';
+      });
+      hasError = true;
     }
 
     if (_messageController.text.isEmpty) {
       setState(() {
         _messageError = 'Please enter your message';
       });
-      return;
+      hasError = true;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    if (hasError) {
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
 
     try {
       // Simulate API call
@@ -262,14 +274,20 @@ class _SupportScreenState extends State<SupportScreen> {
                 borderRadius: BorderRadius.circular(15),
                 border: _issueError != null
                     ? Border.all(color: Colors.red, width: 1)
-                    : null,
+                    : _isIssueTypeFocused
+                        ? Border.all(
+                            color: const Color(0xFFDEDEDE),
+                            width: 1,
+                          )
+                        : null,
               ),
-              child: InkWell(
-                onTap: _showIssueTypePicker,
+              child: GestureDetector(
+                onTap: _handleIssueTypeTap,
+                behavior: HitTestBehavior.opaque,
                 child: InputDecorator(
                   decoration: InputDecoration(
                     prefixIcon: Icon(
-                      Iconsax.box,
+                      Iconsax.message_question,
                       color: theme.brightness == Brightness.dark
                           ? const Color(0xFFFFFFFF)
                           : const Color(0xFF3D3D3D),
@@ -277,34 +295,34 @@ class _SupportScreenState extends State<SupportScreen> {
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 12),
-                    hintText: 'Select Issue Type',
-                    hintStyle: GoogleFonts.dmSans(
+                    labelText: 'Type of Inquiry',
+                    labelStyle: GoogleFonts.dmSans(
                       color: theme.brightness == Brightness.dark
-                          ? const Color(0xFF7B7B80)
-                          : const Color(0xFF616161),
+                          ? const Color(0xFFFFFFFF)
+                          : const Color(0xFF3D3D3D),
+                      fontSize: 16,
                     ),
+                    floatingLabelBehavior: FloatingLabelBehavior.always,
                     errorText: _issueError,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        _selectedIssue ?? '',
+                        _selectedIssue ?? 'Other',
                         style: GoogleFonts.dmSans(
                           color: theme.brightness == Brightness.dark
-                              ? const Color(0xFFFFFFFF)
-                              : const Color(0xFF3D3D3D),
+                              ? const Color(0xFF7B7B80)
+                              : const Color(0xFF616161),
+                          fontSize: 16,
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 16),
-                        child: Icon(
-                          FontAwesomeIcons.chevronDown,
-                          size: 16,
-                          color: theme.brightness == Brightness.dark
-                              ? const Color(0xFFFFFFFF)
-                              : const Color(0xFF3D3D3D),
-                        ),
+                      Icon(
+                        Iconsax.arrow_down_1,
+                        size: 20,
+                        color: theme.brightness == Brightness.dark
+                            ? const Color(0xFFFFFFFF)
+                            : const Color(0xFF3D3D3D),
                       ),
                     ],
                   ),

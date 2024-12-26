@@ -151,8 +151,9 @@ class _TodoListScreenState extends State<TodoListScreen> {
 
   Widget _buildTab(String title, String value) {
     final isSelected = _selectedTab == value;
-    return InkWell(
+    return GestureDetector(
       onTap: () => setState(() => _selectedTab = value),
+      behavior: HitTestBehavior.opaque,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(

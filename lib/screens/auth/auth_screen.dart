@@ -269,9 +269,27 @@ class _AuthScreenState extends State<AuthScreen>
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CustomCheckbox(
-              value: _rememberMe,
-              onChanged: (value) => setState(() => _rememberMe = value),
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: Checkbox(
+                value: _rememberMe,
+                onChanged: (value) {
+                  setState(() {
+                    _rememberMe = value ?? false;
+                  });
+                },
+                activeColor: const Color(0xFF3D3D3D),
+                side: BorderSide(
+                  color: theme.brightness == Brightness.dark
+                      ? const Color(0xFFFFFFFF)
+                      : const Color(0xFF3D3D3D),
+                  width: 1,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
             ),
             const SizedBox(width: 8),
             Text(
