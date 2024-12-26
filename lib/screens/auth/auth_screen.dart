@@ -110,13 +110,21 @@ class _AuthScreenState extends State<AuthScreen>
   }
 
   Future<void> _handleContinue() async {
+    setState(() {
+      _emailError = null;
+    });
+
     if (_emailController.text.isEmpty) {
-      _showToast('Please enter your email', isError: true);
+      setState(() {
+        _emailError = 'Please enter your email';
+      });
       return;
     }
 
     if (!_isValidEmail(_emailController.text)) {
-      _showToast('Please enter a valid email', isError: true);
+      setState(() {
+        _emailError = 'Please enter a valid email';
+      });
       return;
     }
 
@@ -143,9 +151,8 @@ class _AuthScreenState extends State<AuthScreen>
       
       setState(() {
         _isLoading = false;
+        _emailError = 'An error occurred. Please try again.';
       });
-      
-      _showToast('An error occurred', isError: true);
     }
   }
 
@@ -249,9 +256,9 @@ class _AuthScreenState extends State<AuthScreen>
           controller: _emailController,
           focusNode: _emailFocusNode,
           placeholder: 'Enter your email',
-          error: _emailError,
-          keyboardType: TextInputType.emailAddress,
           icon: Iconsax.sms,
+          keyboardType: TextInputType.emailAddress,
+          error: _emailError,
           onChanged: (value) {
             if (_emailError != null) {
               setState(() => _emailError = null);

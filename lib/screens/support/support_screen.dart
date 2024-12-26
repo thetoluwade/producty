@@ -19,8 +19,12 @@ class _SupportScreenState extends State<SupportScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _messageController = TextEditingController();
-  String _selectedIssue = 'Technical Support';
+  String? _selectedIssue;
   bool _isLoading = false;
+  String? _nameError;
+  String? _emailError;
+  String? _messageError;
+  String? _issueError;
 
   final List<String> _issueTypes = [
     'Account Recovery',
@@ -31,14 +35,6 @@ class _SupportScreenState extends State<SupportScreen> {
 
   bool _isValidEmail(String email) {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _messageController.dispose();
-    super.dispose();
   }
 
   void _showToast(String message, {bool isError = false}) {
@@ -90,6 +86,7 @@ class _SupportScreenState extends State<SupportScreen> {
             onTap: () {
               setState(() {
                 _selectedIssue = issueType;
+                _issueError = null;
               });
               Navigator.pop(context);
             },
@@ -100,28 +97,46 @@ class _SupportScreenState extends State<SupportScreen> {
   }
 
   Future<void> _handleSubmit() async {
+    // Clear previous errors
+    setState(() {
+      _nameError = null;
+      _emailError = null;
+      _messageError = null;
+      _issueError = null;
+    });
+
     if (_selectedIssue == null) {
-      _showToast('Please select an issue type', isError: true);
+      setState(() {
+        _issueError = 'Please select an issue type';
+      });
       return;
     }
 
     if (_nameController.text.isEmpty) {
-      _showToast('Please enter your name', isError: true);
+      setState(() {
+        _nameError = 'Please enter your name';
+      });
       return;
     }
 
     if (_emailController.text.isEmpty) {
-      _showToast('Please enter your email', isError: true);
+      setState(() {
+        _emailError = 'Please enter your email';
+      });
       return;
     }
 
     if (!_isValidEmail(_emailController.text)) {
-      _showToast('Please enter a valid email', isError: true);
+      setState(() {
+        _emailError = 'Please enter a valid email';
+      });
       return;
     }
 
     if (_messageController.text.isEmpty) {
-      _showToast('Please enter your message', isError: true);
+      setState(() {
+        _messageError = 'Please enter your message';
+      });
       return;
     }
 
@@ -137,14 +152,20 @@ class _SupportScreenState extends State<SupportScreen> {
         Navigator.pop(context);
       }
     } catch (e) {
-      _showToast('Failed to submit support ticket', isError: true);
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+      _showToast('Failed to send message', isError: true);
     }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _messageController.dispose();
+    super.dispose();
   }
 
   @override
@@ -206,15 +227,31 @@ class _SupportScreenState extends State<SupportScreen> {
             const SizedBox(height: 24),
             CustomTextField(
               controller: _nameController,
-              placeholder: 'Enter your full name',
-              icon: Iconsax.user_edit,
+              placeholder: 'Enter your name',
+              icon: Iconsax.user,
+              error: _nameError,
+              onChanged: (value) {
+                if (_nameError != null) {
+                  setState(() {
+                    _nameError = null;
+                  });
+                }
+              },
             ),
             const SizedBox(height: 16),
             CustomTextField(
               controller: _emailController,
-              placeholder: 'Enter your email address',
-              icon: Iconsax.sms_edit,
+              placeholder: 'Enter your email',
+              icon: Iconsax.sms,
               keyboardType: TextInputType.emailAddress,
+              error: _emailError,
+              onChanged: (value) {
+                if (_emailError != null) {
+                  setState(() {
+                    _emailError = null;
+                  });
+                }
+              },
             ),
             const SizedBox(height: 16),
             Container(
@@ -223,6 +260,9 @@ class _SupportScreenState extends State<SupportScreen> {
                     ? const Color(0xFF28282A)
                     : const Color(0xFFF3F3F3),
                 borderRadius: BorderRadius.circular(15),
+                border: _issueError != null
+                    ? Border.all(color: Colors.red, width: 1)
+                    : null,
               ),
               child: InkWell(
                 onTap: _showIssueTypePicker,
@@ -243,12 +283,13 @@ class _SupportScreenState extends State<SupportScreen> {
                           ? const Color(0xFF7B7B80)
                           : const Color(0xFF616161),
                     ),
+                    errorText: _issueError,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        _selectedIssue,
+                        _selectedIssue ?? '',
                         style: GoogleFonts.dmSans(
                           color: theme.brightness == Brightness.dark
                               ? const Color(0xFFFFFFFF)
@@ -270,12 +311,31 @@ class _SupportScreenState extends State<SupportScreen> {
                 ),
               ),
             ),
+            if (_issueError != null)
+              Padding(
+                padding: const EdgeInsets.only(left: 16, top: 4),
+                child: Text(
+                  _issueError!,
+                  style: GoogleFonts.dmSans(
+                    color: Colors.red,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
             const SizedBox(height: 16),
             CustomTextField(
               controller: _messageController,
-              placeholder: 'Describe your issue in detail...',
-              icon: Iconsax.message_edit,
+              placeholder: 'Enter your message',
+              icon: Iconsax.message,
               maxLines: 5,
+              error: _messageError,
+              onChanged: (value) {
+                if (_messageError != null) {
+                  setState(() {
+                    _messageError = null;
+                  });
+                }
+              },
             ),
             const SizedBox(height: 20),
             CustomButton(
