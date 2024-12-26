@@ -24,19 +24,33 @@ class CustomToast {
               ),
             ),
             const SizedBox(width: 12),
-            Text(
-              message,
-              style: GoogleFonts.dmSans(
-                fontSize: 14,
-                color: Colors.white,
+            Flexible(
+              child: Text(
+                message,
+                style: GoogleFonts.dmSans(
+                  fontSize: 14,
+                  color: Colors.white,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
               ),
             ),
           ],
         ),
         backgroundColor: const Color(0xFF3D3D3D),
         behavior: SnackBarBehavior.fixed,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        duration: const Duration(milliseconds: 1500), // Reduced from default 4 seconds to 1.5 seconds
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(35),
+            topRight: Radius.circular(35),
+          ),
+        ),
+        elevation: 0,
+        duration: const Duration(milliseconds: 1500),
       ),
     );
   }

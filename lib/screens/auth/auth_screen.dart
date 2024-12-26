@@ -4,8 +4,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/custom_button.dart';
+import '../../widgets/custom_checkbox.dart';
+import '../../widgets/custom_toast.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -17,16 +20,15 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen>
     with SingleTickerProviderStateMixin {
   final TextEditingController _emailController = TextEditingController();
-  late final PageController _pageController = PageController();
+  final FocusNode _emailFocusNode = FocusNode();
   String? _emailError;
-  bool _rememberMe = false;
   bool _isLoading = false;
   int _currentPage = 0;
-  bool _isKeyboardVisible = false;
-  final FocusNode _emailFocusNode = FocusNode();
-  late AnimationController _animationController;
+  late final PageController _pageController = PageController();
+  late final AnimationController _animationController;
   Timer? _autoPlayTimer;
   bool _isUserInteracting = false;
+  bool _rememberMe = false;
 
   bool _isValidEmail(String email) {
     final emailRegex = RegExp(
@@ -36,20 +38,10 @@ class _AuthScreenState extends State<AuthScreen>
   }
 
   void _showToast(String message, {bool isError = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError ? Colors.red : Colors.black87,
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(20),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-    );
+    CustomToast.show(context, message, isError: isError);
   }
 
-  final List<Map<String, String>> _introSlides = [
+  final List<Map<String, String>> _introSlides = const [
     {
       'title': 'Stay Organized, Achieve More',
       'description': 'Unlock Your Full Potential with Ease',
@@ -57,17 +49,17 @@ class _AuthScreenState extends State<AuthScreen>
     },
     {
       'title': 'Smart Task Management',
-      'description': 'Prioritize and Track Your Progress',
+      'description': 'Efficiently Organize and Prioritize Your Tasks',
       'image': 'assets/images/intro2.svg',
     },
     {
-      'title': 'Seamless Collaboration',
-      'description': 'Work Together, Achieve Together',
+      'title': 'Track Your Progress',
+      'description': 'Monitor Your Achievements and Stay Motivated',
       'image': 'assets/images/intro3.svg',
     },
     {
-      'title': 'Stay Connected Anywhere',
-      'description': 'Access Your Tasks On Any Device',
+      'title': 'Collaborate Seamlessly',
+      'description': 'Work Together with Your Team in Real-Time',
       'image': 'assets/images/intro4.svg',
     },
   ];
@@ -95,12 +87,7 @@ class _AuthScreenState extends State<AuthScreen>
   }
 
   void _onFocusChange() {
-    setState(() {
-      _isKeyboardVisible = _emailFocusNode.hasFocus;
-    });
-    if (_emailFocusNode.hasFocus) {
-      _resetAutoPlayTimer();
-    }
+    _resetAutoPlayTimer();
   }
 
   void _startAutoPlay() {
@@ -122,43 +109,43 @@ class _AuthScreenState extends State<AuthScreen>
     _startAutoPlay();
   }
 
-  void _handleContinue() async {
-    setState(() {
-      _isLoading = true;
-      _emailError = null;
-    });
-
+  Future<void> _handleContinue() async {
     if (_emailController.text.isEmpty) {
-      setState(() {
-        _emailError = 'Please enter your email address';
-        _isLoading = false;
-      });
+      _showToast('Please enter your email', isError: true);
       return;
     }
 
     if (!_isValidEmail(_emailController.text)) {
-      setState(() {
-        _emailError = 'Please enter a valid email address';
-        _isLoading = false;
-      });
+      _showToast('Please enter a valid email', isError: true);
       return;
     }
 
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('onboarding_complete', true);
-      if (mounted) {
-        // TODO: Navigate to OTP verification screen
-        // For now, just marking as onboarded and going to home
-        Navigator.pushReplacementNamed(context, '/home');
-      }
+      final SharedPreferences preferences = await SharedPreferences.getInstance();
+      await preferences.setString('email', _emailController.text);
+      
+      if (!mounted) return;
+      
+      setState(() {
+        _isLoading = false;
+      });
+      
+      _showToast('Verification successful');
+      
+      // Navigate to todo list screen
+      Navigator.pushReplacementNamed(context, '/home');
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _emailError = 'An error occurred. Please try again.';
-          _isLoading = false;
-        });
-      }
+      if (!mounted) return;
+      
+      setState(() {
+        _isLoading = false;
+      });
+      
+      _showToast('An error occurred', isError: true);
     }
   }
 
@@ -245,7 +232,7 @@ class _AuthScreenState extends State<AuthScreen>
     final theme = Theme.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Email address',
@@ -275,25 +262,27 @@ class _AuthScreenState extends State<AuthScreen>
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // CustomCheckbox(
-            //   value: _rememberMe,
-            //   onChanged: (value) => setState(() => _rememberMe = value),
-            // ),
-            // const SizedBox(width: 8),
-            // Text(
-            //   'Remember me',
-            //   style: GoogleFonts.dmSans(
-            //     fontSize: 14,
-            //     color: const Color(0xFF8E8E93),
-            //   ),
-            // ),
+            CustomCheckbox(
+              value: _rememberMe,
+              onChanged: (value) => setState(() => _rememberMe = value),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Remember me',
+              style: GoogleFonts.dmSans(
+                fontSize: 14,
+                color: const Color(0xFF8E8E93),
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 24),
         CustomButton(
-          text: 'Login/Signup',
           onPressed: _handleContinue,
+          text: 'Login/Signup',
           isLoading: _isLoading,
+          color: const Color(0xFF3D3D3D),
+          labelColor: Colors.white,
         ),
         const SizedBox(height: 24),
         Row(
@@ -328,19 +317,15 @@ class _AuthScreenState extends State<AuthScreen>
               width: 115,
               height: 44,
               decoration: BoxDecoration(
+                color: const Color(0xFFF3F3F3),
                 borderRadius: BorderRadius.circular(15),
-                color: theme.brightness == Brightness.dark
-                    ? const Color(0xFF28282A)
-                    : Colors.white,
-                border: Border.all(
-                  color: theme.brightness == Brightness.dark
-                      ? const Color(0xFF3D3D3D)
-                      : const Color(0xFFE5E5EA),
-                ),
               ),
-              child: const Center(
-                child: Icon(
-                  Iconsax.google,
+              child: IconButton(
+                onPressed: () {
+                  // Handle Google sign in
+                },
+                icon: const FaIcon(
+                  FontAwesomeIcons.google,
                   size: 24,
                   color: Color(0xFF3D3D3D),
                 ),
@@ -351,27 +336,23 @@ class _AuthScreenState extends State<AuthScreen>
               width: 115,
               height: 44,
               decoration: BoxDecoration(
+                color: const Color(0xFFF3F3F3),
                 borderRadius: BorderRadius.circular(15),
-                color: theme.brightness == Brightness.dark
-                    ? const Color(0xFF28282A)
-                    : Colors.white,
-                border: Border.all(
-                  color: theme.brightness == Brightness.dark
-                      ? const Color(0xFF3D3D3D)
-                      : const Color(0xFFE5E5EA),
-                ),
               ),
-              child: const Center(
-                child: Icon(
-                  Iconsax.facebook,
+              child: IconButton(
+                onPressed: () {
+                  // Handle Facebook sign in
+                },
+                icon: const FaIcon(
+                  FontAwesomeIcons.facebook,
                   size: 24,
-                  color: Color(0xFF1877F2),
+                  color: Color(0xFF3D3D3D),
                 ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 0),
       ],
     );
   }
@@ -408,18 +389,6 @@ class _AuthScreenState extends State<AuthScreen>
       _isUserInteracting = true;
     });
     _resetAutoPlayTimer();
-  }
-
-  void _handleDragStart() {
-    setState(() {
-      _isUserInteracting = true;
-    });
-  }
-
-  void _handleDragEnd() {
-    setState(() {
-      _isUserInteracting = false;
-    });
   }
 
   @override
@@ -561,7 +530,7 @@ class _AuthScreenState extends State<AuthScreen>
                 20,
                 0,
                 20,
-                MediaQuery.of(context).viewInsets.bottom > 0 ? 110 : 20,
+                MediaQuery.of(context).viewInsets.bottom > 0 ? 114 : 20,
               ),
               decoration: BoxDecoration(
                 color: theme.brightness == Brightness.dark

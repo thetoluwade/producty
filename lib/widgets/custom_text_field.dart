@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/colors.dart';
 
-class CustomTextField extends StatelessWidget {
+class CustomTextField extends StatefulWidget {
   final TextEditingController controller;
   final String placeholder;
   final String? error;
@@ -33,10 +33,40 @@ class CustomTextField extends StatelessWidget {
   });
 
   @override
+  State<CustomTextField> createState() => _CustomTextFieldState();
+}
+
+class _CustomTextFieldState extends State<CustomTextField> {
+  late final FocusNode _focusNode;
+  bool _isFocused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = widget.focusNode ?? FocusNode();
+    _focusNode.addListener(_handleFocusChange);
+  }
+
+  @override
+  void dispose() {
+    if (widget.focusNode == null) {
+      _focusNode.dispose();
+    }
+    _focusNode.removeListener(_handleFocusChange);
+    super.dispose();
+  }
+
+  void _handleFocusChange() {
+    setState(() {
+      _isFocused = _focusNode.hasFocus;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final defaultFillColor = isDark ? AppColors.darkGrey : AppColors.white;
+    final defaultFillColor = isDark ? AppColors.darkGrey : const Color(0xFFF3F3F3);
     final defaultTextColor = isDark ? AppColors.darkText : AppColors.text;
 
     return Column(
@@ -44,39 +74,44 @@ class CustomTextField extends StatelessWidget {
       children: [
         Container(
           decoration: BoxDecoration(
-            color: fillColor ?? defaultFillColor,
+            color: widget.fillColor ?? defaultFillColor,
             borderRadius: BorderRadius.circular(12),
-            border: error != null
+            border: widget.error != null
                 ? Border.all(
                     color: isDark ? AppColors.darkError : AppColors.error,
                     width: 1,
                   )
-                : null,
+                : _isFocused
+                    ? Border.all(
+                        color: const Color(0xFFDEDEDE),
+                        width: 1,
+                      )
+                    : null,
           ),
           child: TextField(
-            controller: controller,
-            focusNode: focusNode,
-            keyboardType: keyboardType,
-            obscureText: obscureText,
-            maxLines: maxLines,
-            onTap: onTap,
-            onChanged: onChanged,
+            controller: widget.controller,
+            focusNode: _focusNode,
+            keyboardType: widget.keyboardType,
+            obscureText: widget.obscureText,
+            maxLines: widget.maxLines,
+            onTap: widget.onTap,
+            onChanged: widget.onChanged,
             style: GoogleFonts.dmSans(
               fontSize: 16,
-              color: textColor ?? defaultTextColor,
+              color: widget.textColor ?? defaultTextColor,
             ),
             decoration: InputDecoration(
-              hintText: placeholder,
+              hintText: widget.placeholder,
               hintStyle: GoogleFonts.dmSans(
                 fontSize: 16,
-                color: (textColor ?? defaultTextColor).withOpacity(0.5),
+                color: (widget.textColor ?? defaultTextColor).withOpacity(0.5),
               ),
-              prefixIcon: icon != null
+              prefixIcon: widget.icon != null
                   ? Icon(
-                      icon,
-                      color: error != null
+                      widget.icon,
+                      color: widget.error != null
                           ? (isDark ? AppColors.darkError : AppColors.error)
-                          : (textColor ?? defaultTextColor).withOpacity(0.5),
+                          : (widget.textColor ?? defaultTextColor).withOpacity(0.5),
                     )
                   : null,
               border: InputBorder.none,
@@ -87,10 +122,10 @@ class CustomTextField extends StatelessWidget {
             ),
           ),
         ),
-        if (error != null) ...[
+        if (widget.error != null) ...[
           const SizedBox(height: 8),
           Text(
-            error!,
+            widget.error!,
             style: GoogleFonts.dmSans(
               fontSize: 14,
               color: isDark ? AppColors.darkError : AppColors.error,
