@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import '../config/theme.dart';
-import '../screens/todo/todo_list_screen.dart';
+import '../screens/dashboard/dashboard_screen.dart';
 
 class ProductyApp extends StatelessWidget {
   const ProductyApp({super.key});
@@ -8,11 +7,13 @@ class ProductyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Producty',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      home: const TodoListScreen(),
+      title: 'Producty',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+      ),
+      home: const DashboardScreen(),
     );
   }
 }

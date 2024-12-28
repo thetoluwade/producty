@@ -16,15 +16,14 @@ class AuthScreen extends StatefulWidget {
   State<AuthScreen> createState() => _AuthScreenState();
 }
 
-class _AuthScreenState extends State<AuthScreen>
-    with SingleTickerProviderStateMixin {
+class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateMixin {
   final TextEditingController _emailController = TextEditingController();
   final FocusNode _emailFocusNode = FocusNode();
   String? _emailError;
   bool _isLoading = false;
   int _currentPage = 0;
-  late final PageController _pageController = PageController();
   late final AnimationController _animationController;
+  late final PageController _pageController;
   Timer? _autoPlayTimer;
   bool _isUserInteracting = false;
   bool _rememberMe = false;
@@ -71,6 +70,7 @@ class _AuthScreenState extends State<AuthScreen>
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
+    _pageController = PageController();
     _startAutoPlay();
   }
 
@@ -131,28 +131,29 @@ class _AuthScreenState extends State<AuthScreen>
       _isLoading = true;
     });
 
-    try {
-      final SharedPreferences preferences = await SharedPreferences.getInstance();
-      await preferences.setString('email', _emailController.text);
-      
-      if (!mounted) return;
-      
-      setState(() {
-        _isLoading = false;
-      });
-      
-      _showToast('Verification successful');
-      
-      // Navigate to todo list screen
-      Navigator.pushReplacementNamed(context, '/home');
-    } catch (e) {
-      if (!mounted) return;
-      
-      setState(() {
-        _isLoading = false;
-        _emailError = 'An error occurred. Please try again.';
-      });
-    }
+    final email = _emailController.text.toLowerCase();
+    final isExisting = email == 'mykel@gmail.com';
+    
+    // Save email to preferences for later use
+    final SharedPreferences preferences = await SharedPreferences.getInstance();
+    await preferences.setString('email', email);
+    await preferences.setBool('is_existing', isExisting);
+    
+    if (!mounted) return;
+    
+    setState(() {
+      _isLoading = false;
+    });
+    
+    // Navigate to OTP screen
+    Navigator.pushNamed(
+      context,
+      '/otp',
+      arguments: {
+        'email': email,
+        'isExisting': isExisting,
+      },
+    );
   }
 
   void _handleNeedHelp() {
